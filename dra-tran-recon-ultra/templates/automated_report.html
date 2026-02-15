@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRA Automated Reconciliation Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --revolt-red: #dd3333;
+            --revolt-black: #121212;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #121212;
+            --border-color: #e5e5e5;
+            --success: #22c55e;
+            --warning: #eab308;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--revolt-red);
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--revolt-black);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-box {
+            background-color: var(--revolt-red);
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-weight: 700;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        h2 {
+            font-weight: 600;
+            margin-top: 0;
+            color: var(--revolt-black);
+        }
+
+        h3 {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #dd3333 0%, #b52828 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(221, 51, 51, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .hero-stat .value {
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid var(--border-color);
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.warning {
+            background: rgba(234, 179, 8, 0.1);
+            color: var(--warning);
+        }
+
+        .status-badge.error {
+            background: rgba(221, 51, 51, 0.1);
+            color: var(--revolt-red);
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-box">DRA</div>
+                <span>Transaction Reconciliation</span>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 12px; color: #6b7280;">REPORT DATE</div>
+                <div style="font-weight: 600;">{{ date }}</div>
+            </div>
+        </header>
+
+        <div class="hero">
+            <div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">VALUE DISCREPANCY</div>
+                <div style="font-size: 32px; font-weight: 700;">-${{ discrepancy }}</div>
+            </div>
+            <div style="display: flex; gap: 40px;">
+                <div class="hero-stat">
+                    <div class="label">Match Rate</div>
+                    <div class="value">{{ match_rate }}%</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="label">Missing Orders</div>
+                    <div class="value">{{ missing_count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Executive Summary</h3>
+            <p>
+                Automated reconciliation completed for <strong>{{ days_analyzed }} day(s)</strong>.
+                We analyzed <strong>{{ total_backend }}</strong> backend transactions against <strong>{{ total_ga4
+                    }}</strong> GA4 purchase events.
+            </p>
+        </div>
+
+        {% if missing_orders %}
+        <div class="card">
+            <h3>Missing Transactions ({{ missing_count }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Value</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in missing_orders %}
+                    <tr>
+                        <td style="font-family: monospace; color: var(--revolt-red); font-weight: 600;">{{
+                            order.clean_id }}</td>
+                        <td>${{ order.value }}</td>
+                        <td>{{ order.payment_method }}</td>
+                        <td><span class="status-badge warning">Missing</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            &copy; 2026 Data Revolt Agency. All rights reserved. <br>
+            Generated automatically by DRA Recon Bot.
+        </div>
+    </div>
+</body>
+
+</html>
