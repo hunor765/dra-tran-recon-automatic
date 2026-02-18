@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Download, FileText, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Download, FileText, TrendingUp, AlertTriangle, CheckCircle, FileSpreadsheet } from 'lucide-react'
 import { api } from '@/lib/api/client'
 import { HeroStat } from '@/components/dashboard/HeroStat'
 import { TrendChart } from '@/components/dashboard/TrendChart'
@@ -32,9 +32,56 @@ export default function JobResultsPage() {
         }
     }
 
-    const exportResults = (format: 'csv' | 'json') => {
-        // TODO: Implement export functionality
-        alert(`Exporting as ${format.toUpperCase()}...`)
+    const exportResults = async (format: 'csv' | 'json' | 'excel') => {
+        try {
+            // Get the API URL from environment or use default
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+            
+            // Get auth token from Supabase session
+            const { createClient } = await import('@/lib/supabase/client')
+            const supabase = createClient()
+            const { data: { session } } = await supabase.auth.getSession()
+            
+            if (!session?.access_token) {
+                alert('Please log in to export results')
+                return
+            }
+            
+            const endpoint = format === 'excel' 
+                ? `${apiUrl}/api/v1/jobs/${jobId}/export/excel`
+                : `${apiUrl}/api/v1/jobs/${jobId}/export?format=${format}`
+            
+            const response = await fetch(endpoint, {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            })
+            
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.detail || 'Export failed')
+            }
+            
+            // Get filename from Content-Disposition header
+            const contentDisposition = response.headers.get('content-disposition')
+            const filenameMatch = contentDisposition?.match(/filename="?([^"]+)"?/)
+            const filename = filenameMatch?.[1] || `export.${format === 'excel' ? 'xlsx' : format}`
+            
+            // Download the file
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = filename
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url)
+            
+        } catch (error) {
+            console.error('Export failed:', error)
+            alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
     }
 
     if (loading) {
@@ -84,6 +131,13 @@ export default function JobResultsPage() {
                             >
                                 <FileText size={18} />
                                 Export JSON
+                            </button>
+                            <button
+                                onClick={() => exportResults('excel')}
+                                className="px-4 py-2 bg-white border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition flex items-center gap-2"
+                            >
+                                <FileSpreadsheet size={18} />
+                                Export Excel
                             </button>
                         </div>
                     </div>

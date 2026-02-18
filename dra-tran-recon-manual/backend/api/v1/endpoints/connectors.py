@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -7,6 +7,7 @@ import json
 from core.database import get_db
 from core.auth import get_current_user, require_admin
 from core.encryption import encrypt_config, decrypt_config
+from core.rate_limiter import limiter, RateLimits
 from models.connector import Connector
 from models.client import Client
 from schemas.connector import Connector as ConnectorSchema, ConnectorCreate, ConnectorUpdate
@@ -20,7 +21,9 @@ single_router = APIRouter()
 
 
 @router.post("/", response_model=ConnectorSchema)
+@limiter.limit(RateLimits.CREATE)
 async def create_connector(
+    request: Request,
     client_id: int,
     connector: ConnectorCreate,
     db: AsyncSession = Depends(get_db),
@@ -67,7 +70,9 @@ async def create_connector(
 
 
 @router.get("/", response_model=List[ConnectorSchema])
+@limiter.limit(RateLimits.LIST)
 async def list_connectors(
+    request: Request,
     client_id: int,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user)
@@ -81,7 +86,9 @@ async def list_connectors(
 
 
 @single_router.get("/{connector_id}", response_model=ConnectorSchema)
+@limiter.limit(RateLimits.GET)
 async def get_connector(
+    request: Request,
     connector_id: int,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_current_user)
@@ -97,7 +104,9 @@ async def get_connector(
 
 
 @single_router.put("/{connector_id}", response_model=ConnectorSchema)
+@limiter.limit(RateLimits.UPDATE)
 async def update_connector(
+    request: Request,
     connector_id: int,
     connector_update: ConnectorUpdate,
     db: AsyncSession = Depends(get_db),
@@ -135,7 +144,9 @@ async def update_connector(
 
 
 @single_router.delete("/{connector_id}")
+@limiter.limit(RateLimits.DELETE)
 async def delete_connector(
+    request: Request,
     connector_id: int,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_admin)
@@ -154,7 +165,9 @@ async def delete_connector(
 
 
 @single_router.post("/{connector_id}/test")
+@limiter.limit(RateLimits.CONNECTOR_TEST)
 async def test_connector(
+    request: Request,
     connector_id: int,
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_admin)
@@ -200,7 +213,9 @@ async def test_connector(
 
 
 @router.get("/config-examples/{connector_type}")
+@limiter.limit(RateLimits.GET)
 async def get_config_example(
+    request: Request,
     connector_type: str,
     user: dict = Depends(require_admin)
 ):

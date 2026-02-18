@@ -7,6 +7,7 @@ import pytz
 
 from core.database import get_db, AsyncSessionLocal
 from core.auth import require_admin
+from core.scheduler import add_schedule_to_scheduler, remove_schedule_from_scheduler
 from models.schedule import Schedule as ScheduleModel
 from models.client import Client as ClientModel
 from schemas.schedule import Schedule, ScheduleCreate, ScheduleUpdate
@@ -206,6 +207,9 @@ async def create_or_update_schedule(
     await db.commit()
     await db.refresh(schedule)
     
+    # Sync with scheduler
+    await add_schedule_to_scheduler(schedule)
+    
     from schemas.schedule import ScheduleConfig
     config = ScheduleConfig(**schedule.config) if schedule.config else ScheduleConfig(days=30, max_retries=3)
     
@@ -260,6 +264,9 @@ async def update_schedule(
     await db.commit()
     await db.refresh(schedule)
     
+    # Sync with scheduler
+    await add_schedule_to_scheduler(schedule)
+    
     from schemas.schedule import ScheduleConfig
     config = ScheduleConfig(**schedule.config) if schedule.config else ScheduleConfig(days=30, max_retries=3)
     
@@ -298,7 +305,11 @@ async def delete_schedule(
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found for this client")
     
+    schedule_id = schedule.id
     await db.delete(schedule)
     await db.commit()
+    
+    # Remove from scheduler
+    remove_schedule_from_scheduler(schedule_id)
     
     return {"message": "Schedule deleted successfully"}

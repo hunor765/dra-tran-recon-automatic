@@ -20,13 +20,30 @@ interface Connector {
     created_at?: string
 }
 
+interface JobResult {
+    match_rate: number
+    total_backend_value: number
+    total_ga4_value: number
+    missing_count: number
+    missing_ids: string[]
+    ga4_records: number
+    backend_records: number
+}
+
 interface Job {
     id: number
     client_id: number
     client_name?: string | null
-    status: string
+    status: 'pending' | 'running' | 'completed' | 'failed' | 'retrying'
     last_run: string | null
-    result_summary: string | null
+    result_summary: JobResult | null
+    logs: string | null
+    days: number
+    start_date: string | null
+    end_date: string | null
+    retry_count: number
+    max_retries: number
+    can_retry?: boolean
 }
 
 class DraApiClient {
@@ -138,8 +155,15 @@ class DraApiClient {
         return this.fetch(`/api/v1/jobs/${id}`)
     }
     
-    async runJob(clientId: number): Promise<Job> {
-        return this.fetch(`/api/v1/jobs/run/${clientId}`, { method: 'POST' })
+    async runJob(clientId: number, config?: { days?: number; start_date?: string; end_date?: string; max_retries?: number }): Promise<Job> {
+        return this.fetch(`/api/v1/jobs/run/${clientId}`, { 
+            method: 'POST',
+            body: config ? JSON.stringify(config) : undefined
+        })
+    }
+
+    async retryJob(jobId: number): Promise<Job> {
+        return this.fetch(`/api/v1/jobs/${jobId}/retry`, { method: 'POST' })
     }
     
     // Admin

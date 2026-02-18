@@ -173,10 +173,59 @@ POST /api/v1/jobs/{job_id}/retry
 | :--- | :--- | :--- | :--- |
 | `GET` | `/stats` | Aggregated stats: Client count, Active clients, Job counts, Jobs by status, Recent jobs (10). | Admin |
 | `GET` | `/jobs` | Admin view of all jobs with filtering. | Admin |
+| `POST` | `/cleanup` | Run data retention cleanup. Use `{"dry_run": true}` to preview. | Admin |
+| `GET` | `/storage` | Get database storage statistics and usage. | Admin |
+| `GET` | `/health/detailed` | Detailed health check including external services. | Admin |
+
+## 7. Data Exports
+**Base Path:** `/api/v1`
+
+| Method | Endpoint | Functionality | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/jobs/{job_id}/export` | Export job results as CSV or JSON. Query params: `format` (csv/json), `data_type` (missing/all). | Authenticated |
+| `GET` | `/jobs/{job_id}/export/excel` | Export job results as formatted Excel file. | Authenticated |
 
 ---
 
 ## Changes Log
+
+### Production Readiness (2026-02-17)
+
+#### 9. Email Service Integration
+- **New**: Resend email service for notifications
+- **New**: User invitation emails with professional templates
+- **New**: Job completion/failure email notifications
+- **New**: `POST /clients/{client_id}/invite` now sends actual emails
+
+#### 10. Data Export Functionality
+- **New**: `GET /jobs/{job_id}/export` - CSV/JSON export
+- **New**: `GET /jobs/{job_id}/export/excel` - Excel export with formatting
+- **Frontend**: Export buttons implemented on results page
+
+#### 11. Monitoring & Error Tracking
+- **New**: Sentry integration for error tracking
+- **New**: Structured JSON logging
+- **New**: Performance monitoring context managers
+- **New**: Job failure alerts sent via email
+
+#### 12. Data Retention & Cleanup
+- **New**: Automated data cleanup system
+- **New**: `POST /admin/cleanup` - Manual cleanup endpoint
+- **New**: `GET /admin/storage` - Storage statistics
+- **New**: Daily scheduled cleanup at 3 AM UTC
+- **Configurable retention**: jobs (90d), logs (30d), failed jobs (180d)
+
+#### 13. Testing Suite
+- **New**: Comprehensive test coverage
+- **New**: `tests/test_ingestors.py` - Ingestor unit tests
+- **New**: `tests/test_api_endpoints.py` - API endpoint tests
+- **New**: `tests/test_core_components.py` - Core component tests
+
+#### 14. Production Configuration
+- **New**: Environment-based CORS configuration
+- **New**: Redis scheduler persistence option
+- **New**: Version tracking in API responses
+- **Updated**: `.env.example` with all new settings
 
 ### Phase 1 (Completed)
 
@@ -276,3 +325,10 @@ Log final error
 | `DATABASE_URL` | PostgreSQL connection string | Required |
 | `ENCRYPTION_KEY` | Key for config encryption | Required |
 | `SCHEDULER_ENABLED` | Enable background scheduler | `true` |
+| `RESEND_API_KEY` | Resend API key for email | Optional |
+| `FROM_EMAIL` | Sender email address | `noreply@datarevolt.agency` |
+| `SENTRY_DSN` | Sentry DSN for error tracking | Optional |
+| `REDIS_URL` | Redis for caching/scheduler | Optional |
+| `FRONTEND_URL` | Frontend URL for email links | `http://localhost:3000` |
+| `CORS_ORIGINS` | Comma-separated allowed origins | `http://localhost:3000` |
+| `RETENTION_*` | Data retention periods (days) | Various |
