@@ -150,13 +150,6 @@ async def shutdown_event():
     await engine.dispose()
 
 
-# Global OPTIONS handler for CORS preflight
-@app.options("/{path:path}")
-async def handle_options(request: Request, path: str):
-    """Handle OPTIONS preflight requests globally."""
-    return {"detail": "OK"}
-
-
 @app.get("/", tags=["root"])
 @limiter.limit(RateLimits.HEALTH)
 def read_root(request: Request):
