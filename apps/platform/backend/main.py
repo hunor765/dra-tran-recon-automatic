@@ -4,6 +4,7 @@ This module initializes the FastAPI application with all necessary
 configurations, middleware, and routes.
 """
 import logging
+import os
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,13 +35,22 @@ logger = logging.getLogger(__name__)
 # Parse CORS origins from settings
 def parse_cors_origins():
     """Parse CORS origins from environment variable."""
+    # Debug: Check environment variables directly
+    cors_from_env = os.environ.get('CORS_ORIGINS', 'NOT_SET')
+    logger.info(f"CORS_ORIGINS from os.environ: {cors_from_env!r}")
+    
     # Check if we should allow all origins (for debugging)
     if getattr(settings, 'CORS_ALLOW_ALL', False):
         logger.warning("CORS_ALLOW_ALL is enabled - allowing all origins (not recommended for production)")
         return ["*"]
     
+    # Try to get from settings (pydantic)
     origins_str = getattr(settings, 'CORS_ORIGINS', '')
-    logger.info(f"Raw CORS_ORIGINS from settings: {origins_str!r}")
+    logger.info(f"CORS_ORIGINS from pydantic settings: {origins_str!r}")
+    
+    # Use direct env var if available, otherwise fall back to pydantic settings
+    if cors_from_env != 'NOT_SET':
+        origins_str = cors_from_env
     
     if origins_str and origins_str != "http://localhost:3000,http://localhost:3001,http://localhost:4000":
         origins = [origin.strip() for origin in origins_str.split(',') if origin.strip()]
