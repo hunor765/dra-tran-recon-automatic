@@ -3,13 +3,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/client'
 
+interface JobResult {
+    match_rate: number
+    total_backend_value: number
+    total_ga4_value: number
+    missing_count: number
+    missing_ids: string[]
+    ga4_records: number
+    backend_records: number
+}
+
 interface Job {
     id: number
     client_id: number
     client_name?: string | null
     status: string
     last_run: string | null
-    result_summary: string | null
+    result_summary: JobResult | null
 }
 
 export function useJobs(params?: { client_id?: number; status?: string; limit?: number }) {

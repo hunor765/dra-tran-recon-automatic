@@ -6,6 +6,16 @@ import { api } from '@/lib/api/client'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { CardSkeleton, TableSkeleton } from '@/components/ui/LoadingSkeleton'
 
+interface JobResult {
+    match_rate: number
+    total_backend_value: number
+    total_ga4_value: number
+    missing_count: number
+    missing_ids: string[]
+    ga4_records: number
+    backend_records: number
+}
+
 interface AdminStats {
     total_clients: number
     active_clients: number
@@ -17,7 +27,7 @@ interface AdminStats {
         client_name?: string | null
         status: string
         last_run: string | null
-        result_summary: string | null
+        result_summary: JobResult | null
     }>
 }
 
