@@ -34,12 +34,21 @@ logger = logging.getLogger(__name__)
 # Parse CORS origins from settings
 def parse_cors_origins():
     """Parse CORS origins from environment variable."""
+    # Check if we should allow all origins (for debugging)
+    if getattr(settings, 'CORS_ALLOW_ALL', False):
+        logger.warning("CORS_ALLOW_ALL is enabled - allowing all origins (not recommended for production)")
+        return ["*"]
+    
     origins_str = getattr(settings, 'CORS_ORIGINS', '')
-    if origins_str:
+    logger.info(f"Raw CORS_ORIGINS from settings: {origins_str!r}")
+    
+    if origins_str and origins_str != "http://localhost:3000,http://localhost:3001,http://localhost:4000":
         origins = [origin.strip() for origin in origins_str.split(',') if origin.strip()]
         logger.info(f"CORS origins configured: {origins}")
         return origins
+    
     # Default origins for development
+    logger.warning("Using default CORS origins (localhost only). Set CORS_ORIGINS env var for production.")
     return [
         "http://localhost:3000",
         "http://localhost:3001",

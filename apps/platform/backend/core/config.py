@@ -57,7 +57,12 @@ class Settings(BaseSettings):
     RETENTION_OLD_JOBS_DAYS: int = 365
     
     # CORS Origins (comma-separated list)
+    # In production, set this to your frontend URL(s)
+    # Example: https://your-app.vercel.app,https://app.yourdomain.com
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:4000"
+    
+    # Set to 'true' to allow all origins (useful for debugging, not recommended for production)
+    CORS_ALLOW_ALL: bool = False
     
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
