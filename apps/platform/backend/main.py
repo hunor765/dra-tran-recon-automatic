@@ -36,7 +36,9 @@ def parse_cors_origins():
     """Parse CORS origins from environment variable."""
     origins_str = getattr(settings, 'CORS_ORIGINS', '')
     if origins_str:
-        return [origin.strip() for origin in origins_str.split(',') if origin.strip()]
+        origins = [origin.strip() for origin in origins_str.split(',') if origin.strip()]
+        logger.info(f"CORS origins configured: {origins}")
+        return origins
     # Default origins for development
     return [
         "http://localhost:3000",
@@ -53,17 +55,21 @@ app = FastAPI(
     redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
 )
 
-# Set up rate limiting
-setup_rate_limiting(app)
-
-# CORS middleware
+# CORS middleware - MUST be added before rate limiting to handle preflight requests
+origins = parse_cors_origins()
+logger.info(f"Configuring CORS with origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=parse_cors_origins(),
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
+
+# Set up rate limiting
+setup_rate_limiting(app)
 
 
 @app.on_event("startup")
