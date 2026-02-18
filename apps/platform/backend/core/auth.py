@@ -112,6 +112,7 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
             )
             
             if response.status_code == 401:
+                logger.warning(f"Supabase API returned 401 - token is invalid or expired")
                 raise TokenValidationError("Invalid or expired token")
             elif response.status_code != 200:
                 logger.error(f"Supabase auth error: {response.status_code} - {response.text}")
@@ -156,6 +157,7 @@ async def get_current_user(
             }
     
     if not credentials:
+        logger.warning("No credentials provided in Authorization header")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
@@ -163,9 +165,13 @@ async def get_current_user(
         )
     
     token = credentials.credentials
+    # Log token prefix for debugging (don't log full token for security)
+    token_preview = token[:20] + "..." if len(token) > 20 else "invalid"
+    logger.info(f"Received token: {token_preview} (scheme: {credentials.scheme})")
     
     try:
         user_data = await _validate_token_with_supabase(token)
+        logger.info(f"Token validated successfully for user: {user_data.get('email')}")
         
         # Determine role based on email patterns
         email = user_data.get("email", "")
