@@ -1,15 +1,24 @@
 #!/bin/bash
+set -e
 
-# Start DRA Platform Backend on port 8001
+# Railway sets PORT environment variable
+# Default to 8000 if not set
+PORT="${PORT:-8000}"
 
-echo "Starting DRA Platform Backend on port 8001..."
-echo ""
+echo "Starting DRA Platform API..."
+echo "Port: $PORT"
+echo "Environment: $ENVIRONMENT"
 
-# Check if we're in a virtual environment
-if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Activating virtual environment..."
-    source venv/bin/activate
+# Verify ENCRYPTION_KEY is set
+if [ -z "$ENCRYPTION_KEY" ]; then
+    echo "ERROR: ENCRYPTION_KEY environment variable is not set!"
+    exit 1
 fi
 
-# Start the server
-uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+# Run uvicorn with proper binding
+exec uvicorn main:app \
+    --host 0.0.0.0 \
+    --port "$PORT" \
+    --workers 2 \
+    --timeout-keep-alive 75 \
+    --access-log
