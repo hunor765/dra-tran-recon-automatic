@@ -2,6 +2,12 @@ import { createClient } from '@/lib/supabase/client'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Debug: Log the actual API URL being used
+if (typeof window !== 'undefined') {
+    console.log('[API Client] NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
+    console.log('[API Client] API_URL used:', API_URL)
+}
+
 interface Client {
     id: number
     name: string
