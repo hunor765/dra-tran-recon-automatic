@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 router = APIRouter()
 
-@router.post("/", response_model=Client)
+@router.post("", response_model=Client)
 async def create_client(client: ClientCreate, db: AsyncSession = Depends(get_db)):
     db_client = ClientModel(name=client.name, slug=client.slug, logo_url=client.logo_url)
     db.add(db_client)
@@ -17,7 +17,7 @@ async def create_client(client: ClientCreate, db: AsyncSession = Depends(get_db)
     await db.refresh(db_client)
     return db_client
 
-@router.get("/", response_model=List[Client])
+@router.get("", response_model=List[Client])
 async def read_clients(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(ClientModel).offset(skip).limit(limit))
     clients = result.scalars().all()

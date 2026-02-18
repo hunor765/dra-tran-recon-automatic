@@ -20,7 +20,7 @@ router = APIRouter()
 single_router = APIRouter()
 
 
-@router.post("/", response_model=ConnectorSchema)
+@router.post("", response_model=ConnectorSchema)
 @limiter.limit(RateLimits.CREATE)
 async def create_connector(
     request: Request,
@@ -69,7 +69,7 @@ async def create_connector(
     return db_connector
 
 
-@router.get("/", response_model=List[ConnectorSchema])
+@router.get("", response_model=List[ConnectorSchema])
 @limiter.limit(RateLimits.LIST)
 async def list_connectors(
     request: Request,

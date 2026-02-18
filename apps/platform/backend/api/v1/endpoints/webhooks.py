@@ -14,7 +14,7 @@ from schemas.webhook import Webhook as WebhookSchema, WebhookCreate, WebhookUpda
 router = APIRouter()
 
 
-@router.post("/", response_model=WebhookSchema)
+@router.post("", response_model=WebhookSchema)
 @limiter.limit(RateLimits.CREATE)
 async def create_webhook(
     request: Request,
@@ -46,7 +46,7 @@ async def create_webhook(
     return db_webhook
 
 
-@router.get("/", response_model=List[WebhookSchema])
+@router.get("", response_model=List[WebhookSchema])
 @limiter.limit(RateLimits.LIST)
 async def list_webhooks(
     request: Request,
