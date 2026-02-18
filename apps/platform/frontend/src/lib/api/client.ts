@@ -50,7 +50,8 @@ class DraApiClient {
     private baseUrl: string
     
     constructor() {
-        this.baseUrl = API_URL
+        // Remove trailing slash to avoid double slashes in URLs
+        this.baseUrl = API_URL.replace(/\/$/, '')
     }
     
     private async fetch(path: string, options: RequestInit = {}) {
