@@ -63,6 +63,13 @@ class DraApiClient {
     private async fetch(path: string, options: RequestInit = {}) {
         const url = `${this.baseUrl}${path}`
         
+        // Debug: Log the actual URL being fetched
+        if (typeof window !== 'undefined') {
+            console.log('[API Client] Fetching URL:', url)
+            console.log('[API Client] Base URL:', this.baseUrl)
+            console.log('[API Client] Path:', path)
+        }
+        
         // Get auth token from Supabase
         const supabase = createClient()
         const { data: { session } } = await supabase.auth.getSession()
