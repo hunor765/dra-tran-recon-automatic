@@ -77,15 +77,29 @@ app = FastAPI(
 # CORS middleware - MUST be added before rate limiting to handle preflight requests
 origins = parse_cors_origins()
 logger.info(f"Configuring CORS with origins: {origins}")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=600,
-)
+
+# Check if we need to allow all origins (for debugging or when env var isn't working)
+if origins == ["*"] or os.environ.get('CORS_ALLOW_ALL', '').lower() == 'true':
+    logger.warning("Allowing all CORS origins with credentials disabled")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # Must be False when using ["*"]
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+        max_age=600,
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+        max_age=600,
+    )
 
 # Set up rate limiting
 setup_rate_limiting(app)
@@ -134,6 +148,13 @@ async def shutdown_event():
     logger.info("Shutting down DRA Platform")
     shutdown_scheduler()
     await engine.dispose()
+
+
+# Global OPTIONS handler for CORS preflight
+@app.options("/{path:path}")
+async def handle_options(request: Request, path: str):
+    """Handle OPTIONS preflight requests globally."""
+    return {"detail": "OK"}
 
 
 @app.get("/", tags=["root"])
