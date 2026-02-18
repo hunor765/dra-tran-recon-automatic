@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  /* "The Red Line" Palette */
+  --background: #ffffff;
+  --foreground: #171717;
+  /* Neutral-900 */
+
+  /* Accents */
+  --revolt-red: #dd3333;
+  --match-green: #10b981;
+  /* Emerald-500 for data */
+
+  /* Surfaces */
+  --surface-subtle: #f4f4f5;
+  /* Zinc-100 */
+  --surface-border: #e4e4e7;
+  /* Zinc-200 */
+
+  /* Typography */
+  --font-montserrat: "Montserrat", sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-revolt-red: var(--revolt-red);
+  --color-match-green: var(--match-green);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-border: var(--surface-border);
+
+  --font-sans: var(--font-montserrat);
+
+  /* Custom Utilities for "Swiss" feel */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-none: 0px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    /* Rich Black */
+    --foreground: #ffffff;
+
+    --surface-subtle: #171717;
+    /* Neutral-900 */
+    --surface-border: #262626;
+    /* Neutral-800 */
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Global Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+  /* Tight tracking */
+  font-weight: 800;
+  /* ExtraBold */
+  text-transform: uppercase;
+  /* Optional "Swiss" touch */
+}
+
+/* Navigation Active State */
+.nav-active {
+  color: var(--revolt-red);
+  font-weight: 700;
+  position: relative;
+}
+
+/* Sharp Utilities */
+.sharp-border {
+  border: 1px solid var(--surface-border);
+  border-radius: 0;
+}
+
+.sharp-card {
+  background: var(--background);
+  border: 1px solid var(--surface-border);
+  border-radius: 0;
+}
