@@ -25,13 +25,20 @@ interface Client {
     slug: string
 }
 
-interface UserClientLink {
+interface ApiUserClientLink {
     id: number
-    user_id: string
-    client_id: number
     email: string
     role: string
     status: string
+    created_at: string
+}
+
+interface UserClientLink {
+    id: number
+    email: string
+    role: string
+    status: string
+    created_at: string
     client_name?: string
 }
 
@@ -60,7 +67,7 @@ export default function AdminUsersPage() {
             for (const client of clientsData) {
                 try {
                     const clientUsers = await api.getClientUsers(client.id)
-                    links.push(...clientUsers.map((u: UserClientLink) => ({ ...u, client_name: client.name })))
+                    links.push(...clientUsers.map((u: ApiUserClientLink) => ({ ...u, client_name: client.name })))
                 } catch (e) {
                     // Skip clients we can't access
                 }

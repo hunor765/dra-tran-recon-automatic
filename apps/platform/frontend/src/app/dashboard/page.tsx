@@ -53,9 +53,9 @@ interface JobResult {
 interface Job {
   id: number;
   client_id: number;
-  client_name?: string;
+  client_name?: string | null;
   status: "pending" | "running" | "completed" | "failed" | "retrying";
-  last_run: string;
+  last_run: string | null;
   result_summary: JobResult | null;
   logs: string | null;
   days: number;
@@ -63,6 +63,7 @@ interface Job {
   end_date: string | null;
   retry_count: number;
   max_retries: number;
+  can_retry?: boolean;
 }
 
 interface ChartDataPoint {
@@ -160,14 +161,14 @@ export default function DashboardPage() {
   }
 
   function getStatusBadge(status: string) {
-    const variants: Record<string, "success" | "warning" | "error" | "info"> = {
+    const variants: Record<string, "success" | "warning" | "error" | "default"> = {
       completed: "success",
-      running: "info",
-      pending: "info",
+      running: "default",
+      pending: "default",
       retrying: "warning",
       failed: "error",
     };
-    return <Badge variant={variants[status] || "info"}>{status.toUpperCase()}</Badge>;
+    return <Badge variant={variants[status] || "default"}>{status.toUpperCase()}</Badge>;
   }
 
   if (isLoading) {
@@ -466,7 +467,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3 mt-2 text-xs text-neutral-500">
                         <span className="flex items-center gap-1">
                           <Calendar size={12} />
-                          {formatDate(job.last_run)}
+                          {job.last_run ? formatDate(job.last_run) : 'Never'}
                         </span>
                         {job.result_summary && (
                           <span className="flex items-center gap-1">
@@ -501,11 +502,13 @@ export default function DashboardPage() {
                       <div>
                         <div className="text-xs font-bold text-white uppercase">Latest Job</div>
                         <div className="text-[10px] text-neutral-400 mt-1">
-                          {displayJob?.status === "completed"
-                            ? `Job #${displayJob.id} completed successfully`
-                            : displayJob?.status === "failed"
-                            ? `Job #${displayJob.id} failed`
-                            : `Job #${displayJob.id} is ${displayJob?.status}`}
+                          {displayJob
+                            ? displayJob.status === "completed"
+                              ? `Job #${displayJob.id} completed successfully`
+                              : displayJob.status === "failed"
+                              ? `Job #${displayJob.id} failed`
+                              : `Job #${displayJob.id} is ${displayJob.status}`
+                            : 'No job data'}
                         </div>
                       </div>
                     </div>
