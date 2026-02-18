@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/red-kit/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/red-kit/Card";
 import { Badge } from "@/components/red-kit/Badge";
-import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { PageSkeleton, Skeleton } from "@/components/ui/LoadingSkeleton";
 import { api } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
@@ -173,13 +173,13 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <LoadingSkeleton className="h-12" />
+        <Skeleton className="h-12" />
         <div className="grid lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
-            <LoadingSkeleton className="h-[400px]" />
+            <Skeleton className="h-[400px]" />
           </div>
           <div className="lg:col-span-4">
-            <LoadingSkeleton className="h-[400px]" />
+            <Skeleton className="h-[400px]" />
           </div>
         </div>
       </div>
