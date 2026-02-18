@@ -101,6 +101,17 @@ else:
         max_age=600,
     )
 
+# Middleware to handle X-Forwarded-Proto header from Railway
+@app.middleware("http")
+async def handle_forwarded_proto(request: Request, call_next):
+    """Handle X-Forwarded-Proto header for proper HTTPS detection."""
+    # Railway sets X-Forwarded-Proto to 'https' when the request comes via HTTPS
+    forwarded_proto = request.headers.get('X-Forwarded-Proto')
+    if forwarded_proto:
+        request.scope['scheme'] = forwarded_proto
+    response = await call_next(request)
+    return response
+
 # Set up rate limiting
 setup_rate_limiting(app)
 
