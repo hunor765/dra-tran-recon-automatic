@@ -30,7 +30,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=List[Job])
+@router.get("", response_model=List[Job])
 @limiter.limit(RateLimits.LIST)
 async def list_jobs(
     request: Request,

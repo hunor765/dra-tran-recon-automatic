@@ -68,6 +68,8 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
     Raises:
         TokenValidationError: If token is invalid or expired
     """
+    logger.info(f"Validating token. JWT_SECRET configured: {bool(SUPABASE_JWT_SECRET)}, SUPABASE_URL configured: {bool(SUPABASE_URL)}")
+    
     # First, try to validate locally with JWT secret (faster)
     if SUPABASE_JWT_SECRET:
         try:
@@ -77,6 +79,7 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
                 algorithms=["HS256"],
                 audience="authenticated",
             )
+            logger.info("Token validated locally with JWT secret")
             return {
                 "id": payload.get("sub"),
                 "email": payload.get("email"),
@@ -85,6 +88,7 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
                 "user_metadata": payload.get("user_metadata", {}),
             }
         except jwt.ExpiredSignatureError:
+            logger.warning("Token has expired")
             raise TokenValidationError("Token has expired")
         except jwt.InvalidTokenError as e:
             logger.debug(f"Local JWT validation failed, falling back to API: {e}")

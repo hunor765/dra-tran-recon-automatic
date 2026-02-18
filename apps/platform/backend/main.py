@@ -72,6 +72,7 @@ app = FastAPI(
     description="E-commerce transaction reconciliation platform for GA4 and backend systems",
     docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
     redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
+    redirect_slashes=False,  # Disable automatic slash redirects to prevent auth header loss
 )
 
 # CORS middleware - MUST be added before rate limiting to handle preflight requests
