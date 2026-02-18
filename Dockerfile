@@ -12,5 +12,6 @@ COPY apps/platform/backend/ .
 # Expose port
 EXPOSE 8000
 
-# Start the application using shell form to support env vars
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2
+# Use ENTRYPOINT with shell form to support env vars
+ENTRYPOINT ["sh", "-c"]
+CMD ["uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]
