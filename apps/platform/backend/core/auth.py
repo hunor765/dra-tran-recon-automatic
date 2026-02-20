@@ -3,6 +3,7 @@
 Provides JWT token validation via Supabase Auth and role-based access control.
 """
 import logging
+from datetime import datetime
 from typing import Optional, Dict, Any
 
 import httpx
@@ -74,10 +75,15 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
     token_preview = token[:30] + "..." if len(token) > 30 else token
     logger.info(f"Token preview: {token_preview}")
     
-    # Debug: Decode token header without verification
+    # Debug: Decode token header and payload without verification
+    token_header = {}
+    token_payload = {}
     try:
         import base64
         import json
+        import time
+        
+        # Decode header
         header_b64 = token.split('.')[0]
         padding = 4 - len(header_b64) % 4
         if padding != 4:
@@ -85,8 +91,33 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
         header_json = base64.urlsafe_b64decode(header_b64)
         token_header = json.loads(header_json)
         logger.info(f"Token algorithm: {token_header.get('alg')}, Type: {token_header.get('typ')}")
+        
+        # Decode payload (without verification)
+        payload_b64 = token.split('.')[1]
+        padding = 4 - len(payload_b64) % 4
+        if padding != 4:
+            payload_b64 += '=' * padding
+        payload_json = base64.urlsafe_b64decode(payload_b64)
+        token_payload = json.loads(payload_json)
+        
+        exp = token_payload.get('exp')
+        iat = token_payload.get('iat')
+        now = time.time()
+        
+        if exp:
+            exp_str = datetime.fromtimestamp(exp).isoformat()
+            logger.info(f"Token expires at: {exp_str} (exp={exp})")
+            logger.info(f"Current time: {datetime.fromtimestamp(now).isoformat()} (now={now})")
+            if now > exp:
+                logger.warning(f"TOKEN IS EXPIRED by {now - exp} seconds")
+            else:
+                logger.info(f"Token is valid for {exp - now} more seconds")
+        if iat:
+            logger.info(f"Token issued at: {datetime.fromtimestamp(iat).isoformat()}")
+        logger.info(f"Token subject: {token_payload.get('sub')}")
+        logger.info(f"Token email: {token_payload.get('email')}")
     except Exception as e:
-        logger.warning(f"Could not decode token header: {e}")
+        logger.warning(f"Could not decode token: {e}")
     
     # First, try to validate locally with JWT secret (faster)
     if SUPABASE_JWT_SECRET:
@@ -137,16 +168,27 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
             logger.debug(f"Local JWT validation error, falling back to API: {e}")
             # Fall through to API validation
     
-    # Fallback: Validate with Supabase Auth API
+    # For ES256 tokens, we MUST use Supabase Auth API (JWT secret won't work)
+    # HS256 tokens can use either local validation or API validation
+    logger.info(f"Token uses {token_header.get('alg', 'unknown')} algorithm - using Supabase Auth API for validation")
+    
     if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+        logger.error(f"Missing Supabase config: URL={bool(SUPABASE_URL)}, ANON_KEY={bool(SUPABASE_ANON_KEY)}")
         raise TokenValidationError(
             "Supabase configuration missing. Set SUPABASE_URL and SUPABASE_ANON_KEY."
         )
     
     try:
+        # Clean up URL (remove trailing slash)
+        clean_url = SUPABASE_URL.rstrip('/')
+        api_endpoint = f"{clean_url}/auth/v1/user"
+        
+        logger.info(f"Calling Supabase Auth API: {clean_url[:30]}.../auth/v1/user")
+        logger.info(f"Anon key configured: {bool(SUPABASE_ANON_KEY)} (length: {len(SUPABASE_ANON_KEY)})")
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{SUPABASE_URL}/auth/v1/user",
+                api_endpoint,
                 headers={
                     "Authorization": f"Bearer {token}",
                     "apikey": SUPABASE_ANON_KEY,
@@ -154,10 +196,15 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
                 timeout=10.0,
             )
             
+            logger.info(f"Supabase API response status: {response.status_code}")
+            
             if response.status_code == 401:
                 logger.warning(f"Supabase API returned 401 - token is invalid or expired")
-                logger.warning(f"Supabase URL used: {SUPABASE_URL[:20]}... if set")
+                logger.warning(f"Response body: {response.text}")
                 raise TokenValidationError("Invalid or expired token")
+            elif response.status_code == 404:
+                logger.error(f"Supabase API endpoint not found: {api_endpoint}")
+                raise TokenValidationError("Auth endpoint not found - check SUPABASE_URL")
             elif response.status_code != 200:
                 logger.error(f"Supabase auth error: {response.status_code} - {response.text}")
                 raise TokenValidationError("Authentication service error")
