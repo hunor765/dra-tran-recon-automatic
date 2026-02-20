@@ -232,6 +232,19 @@ export default function DebugPage() {
                     <li><strong>Test Auth Header:</strong> Should show &quot;authenticated: true&quot;</li>
                 </ol>
                 
+                <h3 className="font-semibold mt-4 mb-2">Current Issue Diagnosis:</h3>
+                <div className="bg-white p-3 rounded border text-sm">
+                    <p className="font-medium text-red-600">Token validation is failing!</p>
+                    <p className="mt-1">Your token uses <strong>ES256</strong> algorithm (asymmetric/JWT with public key).</p>
+                    <p className="mt-1">The backend cannot validate ES256 tokens locally with JWT_SECRET - it must use Supabase Auth API.</p>
+                    <p className="mt-2 font-medium">To fix:</p>
+                    <ol className="list-decimal list-inside mt-1 space-y-1">
+                        <li>Check Railway logs for detailed error messages</li>
+                        <li>Verify SUPABASE_ANON_KEY is correct (must match frontend)</li>
+                        <li>Verify SUPABASE_URL is correct format: <code>https://project-id.supabase.co</code></li>
+                    </ol>
+                </div>
+                
                 <h3 className="font-semibold mt-4 mb-2">Common Issues:</h3>
                 <ul className="list-disc list-inside space-y-1 text-sm">
                     <li><strong>JWT Secret mismatch:</strong> Get the correct JWT Secret from Supabase Dashboard → Project Settings → API</li>
