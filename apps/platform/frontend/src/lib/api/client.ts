@@ -60,20 +60,49 @@ class DraApiClient {
         this.baseUrl = API_URL.replace(/\/$/, '')
     }
     
+    private async getValidToken(): Promise<string | null> {
+        const supabase = createClient()
+        
+        // First try to get existing session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+            console.error('[API Client] Error getting session:', sessionError)
+        }
+        
+        if (session?.access_token) {
+            console.log('[API Client] Got token from session:', session.access_token.substring(0, 20) + '...')
+            return session.access_token
+        }
+        
+        // If no session, try to refresh
+        console.log('[API Client] No session found, attempting refresh...')
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession()
+        
+        if (refreshError) {
+            console.error('[API Client] Error refreshing session:', refreshError)
+            return null
+        }
+        
+        if (refreshedSession?.access_token) {
+            console.log('[API Client] Got token from refresh:', refreshedSession.access_token.substring(0, 20) + '...')
+            return refreshedSession.access_token
+        }
+        
+        console.error('[API Client] No token available - user may not be logged in')
+        return null
+    }
+    
     private async fetch(path: string, options: RequestInit = {}) {
         const url = `${this.baseUrl}${path}`
         
         // Debug: Log the actual URL being fetched
         if (typeof window !== 'undefined') {
             console.log('[API Client] Fetching URL:', url)
-            console.log('[API Client] Base URL:', this.baseUrl)
-            console.log('[API Client] Path:', path)
         }
         
-        // Get auth token from Supabase
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token
+        // Get valid token (with refresh if needed)
+        const token = await this.getValidToken()
         
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
@@ -82,6 +111,9 @@ class DraApiClient {
         
         if (token) {
             headers['Authorization'] = `Bearer ${token}`
+            console.log('[API Client] Authorization header set')
+        } else {
+            console.warn('[API Client] No token available - request will be unauthorized')
         }
         
         const response = await fetch(url, {
@@ -90,8 +122,29 @@ class DraApiClient {
         })
         
         if (!response.ok) {
-            const error = await response.text()
-            throw new Error(error || `HTTP ${response.status}`)
+            const errorText = await response.text()
+            console.error(`[API Client] HTTP ${response.status} error:`, errorText)
+            
+            // If unauthorized, try to refresh token once and retry
+            if (response.status === 401 && token) {
+                console.log('[API Client] Got 401, attempting token refresh and retry...')
+                const supabase = createClient()
+                const { data: { session: newSession } } = await supabase.auth.refreshSession()
+                
+                if (newSession?.access_token) {
+                    headers['Authorization'] = `Bearer ${newSession.access_token}`
+                    const retryResponse = await fetch(url, {
+                        ...options,
+                        headers,
+                    })
+                    
+                    if (retryResponse.ok) {
+                        return retryResponse.json()
+                    }
+                }
+            }
+            
+            throw new Error(errorText || `HTTP ${response.status}`)
         }
         
         return response.json()
