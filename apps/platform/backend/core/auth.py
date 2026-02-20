@@ -70,28 +70,71 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
     """
     logger.info(f"Validating token. JWT_SECRET configured: {bool(SUPABASE_JWT_SECRET)}, SUPABASE_URL configured: {bool(SUPABASE_URL)}")
     
+    # Debug: Log token format (first 30 chars only)
+    token_preview = token[:30] + "..." if len(token) > 30 else token
+    logger.info(f"Token preview: {token_preview}")
+    
+    # Debug: Decode token header without verification
+    try:
+        import base64
+        import json
+        header_b64 = token.split('.')[0]
+        padding = 4 - len(header_b64) % 4
+        if padding != 4:
+            header_b64 += '=' * padding
+        header_json = base64.urlsafe_b64decode(header_b64)
+        token_header = json.loads(header_json)
+        logger.info(f"Token algorithm: {token_header.get('alg')}, Type: {token_header.get('typ')}")
+    except Exception as e:
+        logger.warning(f"Could not decode token header: {e}")
+    
     # First, try to validate locally with JWT secret (faster)
     if SUPABASE_JWT_SECRET:
         try:
-            payload = jwt.decode(
-                token,
-                SUPABASE_JWT_SECRET,
-                algorithms=["HS256"],
-                audience="authenticated",
-            )
-            logger.info("Token validated locally with JWT secret")
-            return {
-                "id": payload.get("sub"),
-                "email": payload.get("email"),
-                "role": payload.get("role", "authenticated"),
-                "app_metadata": payload.get("app_metadata", {}),
-                "user_metadata": payload.get("user_metadata", {}),
-            }
+            # Try ES256 first (Supabase default), then HS256 for backward compatibility
+            payload = None
+            validation_errors = []
+            
+            for alg in ["ES256", "HS256"]:
+                try:
+                    payload = jwt.decode(
+                        token,
+                        SUPABASE_JWT_SECRET,
+                        algorithms=[alg],
+                        audience="authenticated",
+                    )
+                    logger.info(f"Token validated locally with JWT secret using {alg}")
+                    break
+                except jwt.InvalidSignatureError as e:
+                    validation_errors.append(f"{alg}: Invalid signature - check SUPABASE_JWT_SECRET is correct")
+                    logger.warning(f"JWT validation failed with {alg}: Invalid signature")
+                except jwt.InvalidAlgorithmError as e:
+                    validation_errors.append(f"{alg}: Algorithm mismatch")
+                    logger.warning(f"JWT validation failed with {alg}: Algorithm mismatch")
+                except jwt.ExpiredSignatureError as e:
+                    validation_errors.append(f"{alg}: Token expired")
+                    logger.warning(f"JWT validation failed with {alg}: Token expired")
+                except Exception as e:
+                    validation_errors.append(f"{alg}: {str(e)}")
+                    logger.warning(f"JWT validation failed with {alg}: {e}")
+            
+            if payload:
+                return {
+                    "id": payload.get("sub"),
+                    "email": payload.get("email"),
+                    "role": payload.get("role", "authenticated"),
+                    "app_metadata": payload.get("app_metadata", {}),
+                    "user_metadata": payload.get("user_metadata", {}),
+                }
+            else:
+                logger.debug(f"Local JWT validation failed: {'; '.join(validation_errors)}")
+                # Fall through to API validation
+                
         except jwt.ExpiredSignatureError:
             logger.warning("Token has expired")
             raise TokenValidationError("Token has expired")
-        except jwt.InvalidTokenError as e:
-            logger.debug(f"Local JWT validation failed, falling back to API: {e}")
+        except Exception as e:
+            logger.debug(f"Local JWT validation error, falling back to API: {e}")
             # Fall through to API validation
     
     # Fallback: Validate with Supabase Auth API
@@ -113,6 +156,7 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
             
             if response.status_code == 401:
                 logger.warning(f"Supabase API returned 401 - token is invalid or expired")
+                logger.warning(f"Supabase URL used: {SUPABASE_URL[:20]}... if set")
                 raise TokenValidationError("Invalid or expired token")
             elif response.status_code != 200:
                 logger.error(f"Supabase auth error: {response.status_code} - {response.text}")
@@ -160,7 +204,7 @@ async def get_current_user(
         logger.warning("No credentials provided in Authorization header")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required",
+            detail="Authentication required - no Bearer token in Authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -168,6 +212,14 @@ async def get_current_user(
     # Log token prefix for debugging (don't log full token for security)
     token_preview = token[:20] + "..." if len(token) > 20 else "invalid"
     logger.info(f"Received token: {token_preview} (scheme: {credentials.scheme})")
+    
+    if not token or token == "null" or token == "undefined":
+        logger.warning(f"Empty or invalid token value: '{token}'")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token format",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
     try:
         user_data = await _validate_token_with_supabase(token)

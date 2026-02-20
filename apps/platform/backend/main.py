@@ -215,8 +215,59 @@ async def health_check(request: Request):
     return health_status
 
 
+@app.get("/debug/auth", tags=["debug"])
+async def debug_auth(request: Request):
+    """Debug endpoint to check auth configuration (admin only in production).
+    
+    Returns:
+        dict: Auth configuration status (sensitive values are masked)
+    """
+    from core.auth import SUPABASE_URL, SUPABASE_JWT_SECRET, SUPABASE_ANON_KEY
+    
+    # Get auth header from request for debugging
+    auth_header = request.headers.get("Authorization", "Not provided")
+    token_preview = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+        token_preview = token[:30] + "..." if len(token) > 30 else token
+        # Decode token header without verification to show algorithm
+        try:
+            import base64
+            import json
+            header_b64 = token.split('.')[0]
+            # Add padding if needed
+            padding = 4 - len(header_b64) % 4
+            if padding != 4:
+                header_b64 += '=' * padding
+            header_json = base64.urlsafe_b64decode(header_b64)
+            token_header = json.loads(header_json)
+        except Exception as e:
+            token_header = {"error": str(e)}
+    else:
+        token_header = {"error": "No Bearer token provided"}
+    
+    return {
+        "supabase_configured": {
+            "url": bool(SUPABASE_URL),
+            "url_value": SUPABASE_URL[:30] + "..." if SUPABASE_URL else None,
+            "jwt_secret": bool(SUPABASE_JWT_SECRET),
+            "jwt_secret_length": len(SUPABASE_JWT_SECRET) if SUPABASE_JWT_SECRET else 0,
+            "anon_key": bool(SUPABASE_ANON_KEY),
+        },
+        "token_received": {
+            "has_auth_header": auth_header != "Not provided",
+            "token_preview": token_preview,
+            "decoded_header": token_header,
+        },
+        "environment": settings.ENVIRONMENT,
+    }
+
+
 # Import and include routers
-from api.v1.endpoints import clients, jobs, connectors, admin, users, schedules, webhooks, exports
+from api.v1.endpoints import clients, jobs, connectors, admin, users, schedules, webhooks, exports, debug
+
+# Debug router (always available, but consider restricting in production)
+app.include_router(debug.router, prefix="/api/v1", tags=["debug"])
 
 app.include_router(clients.router, prefix="/api/v1/clients", tags=["clients"])
 app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
