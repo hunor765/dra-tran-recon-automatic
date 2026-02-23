@@ -52,7 +52,7 @@ async def get_admin_stats(
     result = await db.execute(
         select(Job, Client.name.label("client_name"))
         .join(Client, Job.client_id == Client.id)
-        .order_by(Job.last_run.desc())
+        .order_by(Job.started_at.desc())
         .limit(10)
     )
     recent_jobs = []
@@ -92,7 +92,7 @@ async def get_all_jobs(
     if status:
         query = query.where(Job.status == status)
     
-    query = query.order_by(Job.last_run.desc()).offset(skip).limit(limit)
+    query = query.order_by(Job.started_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
     
     jobs = []
