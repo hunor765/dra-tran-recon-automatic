@@ -38,6 +38,7 @@ _jwks_project_id: Optional[str] = None
 ADMIN_EMAIL_PATTERNS = [
     "@dra.com",
     "@datarevolt.ro",
+    "@datarevolt.agency",
     "@revolt.agency",
 ]
 

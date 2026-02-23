@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 const ADMIN_EMAIL_PATTERNS = [
     /@dra\.com$/i,           // DRA company emails
     /@datarevolt\.ro$/i,     // Data Revolt Romania
+    /@datarevolt\.agency$/i, // Data Revolt Agency
     /@revolt\.agency$/i,     // Revolt Agency
 ]
 
@@ -60,7 +61,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check admin access
-    const isAdmin = isAdminEmail(user.email) || user.user_metadata?.role === 'admin'
+    const isAdmin = isAdminEmail(user.email) || user.app_metadata?.role === 'admin' || user.user_metadata?.role === 'admin'
     
     // Admin routes require admin role
     if (pathname.startsWith('/admin') && !isAdmin) {

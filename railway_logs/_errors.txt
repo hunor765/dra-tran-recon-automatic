@@ -1,0 +1,60 @@
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+socket.gaierror: [Errno -2] Name or service not known
+---
+INFO:     100.64.0.8:27810 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+INFO:     100.64.0.9:14938 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+    |     raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+    | socket.gaierror: [Errno -2] Name or service not known
+---
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+socket.gaierror: [Errno -2] Name or service not known
+---
+INFO:     100.64.0.9:14948 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+    |     raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+INFO:     100.64.0.9:42804 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+    | socket.gaierror: [Errno -2] Name or service not known
+---
+socket.gaierror: [Errno -2] Name or service not known
+---
+INFO:     100.64.0.9:42806 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+    |     raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+Railway rate limit of 500 logs/sec reached for replica, update your application to reduce the logging rate. Messages dropped: 263
+---
+INFO:     100.64.0.6:53138 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+    |     raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+    | socket.gaierror: [Errno -2] Name or service not known
+---
+    raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+socket.gaierror: [Errno -2] Name or service not known
+---
+INFO:     100.64.0.6:53148 - "GET /api/v1/jobs?limit=10 HTTP/1.1" 500 Internal Server Error
+---
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+---
+    |     raise last_error or exceptions.TargetServerAttributeNotMatched(
+---
+    | socket.gaierror: [Errno -2] Name or service not known
+---

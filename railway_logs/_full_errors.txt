@@ -1,0 +1,495 @@
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:29:07.114136008Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:29:07.126295610Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:29:07.128691767Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:29:07.128696289Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.104235572Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.104238962Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.119543520Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.136399292Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.139655366Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:07.139660331Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.170060475Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.170063996Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.181846283Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.190605123Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.192486262Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:47.192492389Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:53.955721025Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:53.955725302Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:53.969395188Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:53.978347671Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:54.108383366Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:54.108386907Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:59.301715507Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:59.307658896Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:59.496994527Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:30:59.496999193Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.123131710Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.123148319Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.139431566Z"
+}
+===
+{
+  "message": "socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.149943600Z"
+}
+===
+{
+  "message": "  |     raise BaseExceptionGroup(",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.329234222Z"
+}
+===
+{
+  "message": "  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.329237413Z"
+}
+===
+{
+  "message": "    | socket.gaierror: [Errno -2] Name or service not known",
+  "attributes": {
+    "level": "error"
+  },
+  "tags": {
+    "project": "82a60368-a35f-407d-b91c-fda7c4df0a50",
+    "environment": "35a62989-f226-4922-a94f-05b71577983e",
+    "service": "edd77b6a-44ec-4dd0-bb6b-129583c5e8f4",
+    "deployment": "084c7dc1-a041-463b-8ab8-9d3a7b5466c5",
+    "replica": "a7851753-9b6e-4000-99dd-59254e0daa80"
+  },
+  "timestamp": "2026-02-23T10:31:04.342502800Z"
+}
+===
