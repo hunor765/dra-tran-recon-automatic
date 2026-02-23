@@ -218,6 +218,7 @@ def _convert_ec_jwk_to_pem(key: Dict[str, Any]) -> Optional[str]:
     """
     try:
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.hazmat.primitives import serialization
         
         # Decode base64url encoded coordinates
         x_b64 = key['x']
@@ -267,6 +268,8 @@ def _convert_rsa_jwk_to_pem(key: Dict[str, Any]) -> Optional[str]:
     """
     try:
         from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import serialization
         
         n_b64 = key['n']
         e_b64 = key['e']
