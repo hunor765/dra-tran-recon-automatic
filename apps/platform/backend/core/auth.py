@@ -5,14 +5,12 @@ Provides JWT token validation via Supabase Auth and role-based access control.
 import logging
 import base64
 import json
+import time
 from datetime import datetime
 from typing import Optional, Dict, Any, Tuple
 
 import httpx
 import jwt
-from jwt.algorithms import ECAlgorithm
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends import default_backend
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,6 +32,7 @@ SUPABASE_JWT_SECRET = settings.SUPABASE_JWT_SECRET or ""
 # JWKS cache
 _jwks_cache: Optional[Dict[str, Any]] = None
 _jwks_last_fetch: Optional[datetime] = None
+_jwks_project_id: Optional[str] = None
 
 # Admin email patterns for role determination
 ADMIN_EMAIL_PATTERNS = [
@@ -105,10 +104,26 @@ def _decode_token_parts(token: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 async def _fetch_jwks() -> Optional[Dict[str, Any]]:
     """Fetch JWKS (JSON Web Key Set) from Supabase.
     
+    Supabase GoTrue exposes JWKS at /auth/v1/.well-known/jwks.json
+    
     Returns:
         dict: JWKS containing public keys, or None if fetch fails
     """
-    global _jwks_cache, _jwks_last_fetch
+    global _jwks_cache, _jwks_last_fetch, _jwks_project_id
+    
+    # Extract project ID from URL to detect project changes
+    current_project_id = None
+    if SUPABASE_URL:
+        # URL format: https://[project-ref].supabase.co
+        parts = SUPABASE_URL.replace('https://', '').replace('http://', '').split('.')
+        if parts:
+            current_project_id = parts[0]
+    
+    # Clear cache if project changed
+    if _jwks_project_id and _jwks_project_id != current_project_id:
+        logger.info("Supabase project changed, clearing JWKS cache")
+        _jwks_cache = None
+        _jwks_last_fetch = None
     
     # Use cache if available (JWKS rarely changes)
     if _jwks_cache and _jwks_last_fetch:
@@ -119,27 +134,38 @@ async def _fetch_jwks() -> Optional[Dict[str, Any]]:
     if not SUPABASE_URL:
         return None
     
-    try:
-        clean_url = SUPABASE_URL.rstrip('/')
-        jwks_url = f"{clean_url}/.well-known/jwks.json"
-        
-        logger.debug(f"Fetching JWKS from: {jwks_url}")
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.get(jwks_url, timeout=10.0)
+    # Try multiple possible JWKS endpoints
+    clean_url = SUPABASE_URL.rstrip('/')
+    possible_urls = [
+        f"{clean_url}/auth/v1/.well-known/jwks.json",
+        f"{clean_url}/.well-known/jwks.json",
+    ]
+    
+    for jwks_url in possible_urls:
+        try:
+            logger.debug(f"Fetching JWKS from: {jwks_url}")
             
-            if response.status_code == 200:
-                _jwks_cache = response.json()
-                _jwks_last_fetch = datetime.utcnow()
-                logger.debug("JWKS fetched and cached successfully")
-                return _jwks_cache
-            else:
-                logger.warning(f"Failed to fetch JWKS: {response.status_code}")
-                return None
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    jwks_url, 
+                    headers={"apikey": SUPABASE_ANON_KEY} if SUPABASE_ANON_KEY else {},
+                    timeout=10.0
+                )
                 
-    except Exception as e:
-        logger.warning(f"Error fetching JWKS: {e}")
-        return None
+                if response.status_code == 200:
+                    _jwks_cache = response.json()
+                    _jwks_last_fetch = datetime.utcnow()
+                    _jwks_project_id = current_project_id
+                    logger.info(f"JWKS fetched successfully from: {jwks_url}")
+                    return _jwks_cache
+                else:
+                    logger.debug(f"JWKS endpoint returned {response.status_code}: {jwks_url}")
+                    
+        except Exception as e:
+            logger.debug(f"Error fetching JWKS from {jwks_url}: {e}")
+    
+    logger.warning("Failed to fetch JWKS from all possible endpoints")
+    return None
 
 
 def _get_public_key_from_jwks(jwks: Dict[str, Any], kid: str) -> Optional[str]:
@@ -154,51 +180,119 @@ def _get_public_key_from_jwks(jwks: Dict[str, Any], kid: str) -> Optional[str]:
     """
     try:
         keys = jwks.get('keys', [])
-        for key in keys:
-            if key.get('kid') == kid:
-                # Convert JWK to PEM
-                if key.get('kty') == 'EC' and key.get('crv') == 'P-256':
-                    # ES256 key
-                    x = base64.urlsafe_b64decode(key['x'] + '===')
-                    y = base64.urlsafe_b64decode(key['y'] + '===')
-                    
-                    # Build uncompressed point (0x04 || x || y)
-                    point = b'\x04' + x + y
-                    
-                    from cryptography.hazmat.primitives.asymmetric import ec
-                    public_key = ec.EllipticCurvePublicKey.from_encoded_point(
-                        ec.SECP256R1(), point
-                    )
-                    
-                    pem = public_key.public_bytes(
-                        encoding=serialization.Encoding.PEM,
-                        format=serialization.PublicFormat.SubjectPublicKeyInfo
-                    )
-                    return pem.decode('utf-8')
-                    
-                elif key.get('kty') == 'RSA':
-                    # RSA key (for RS256)
-                    from cryptography.hazmat.primitives.asymmetric import rsa
-                    
-                    n = int.from_bytes(
-                        base64.urlsafe_b64decode(key['n'] + '==='), 'big'
-                    )
-                    e = int.from_bytes(
-                        base64.urlsafe_b64decode(key['e'] + '==='), 'big'
-                    )
-                    
-                    public_key = rsa.RSAPublicNumbers(e, n).public_key(default_backend())
-                    pem = public_key.public_bytes(
-                        encoding=serialization.Encoding.PEM,
-                        format=serialization.PublicFormat.SubjectPublicKeyInfo
-                    )
-                    return pem.decode('utf-8')
+        logger.debug(f"Looking for key with kid '{kid}' in JWKS with {len(keys)} keys")
         
-        logger.warning(f"Key with kid '{kid}' not found in JWKS")
+        for key in keys:
+            key_kid = key.get('kid')
+            key_kty = key.get('kty')
+            logger.debug(f"Checking key: kid={key_kid}, kty={key_kty}")
+            
+            if key_kid == kid:
+                logger.info(f"Found matching key with kid '{kid}', type '{key_kty}'")
+                
+                # Convert JWK to PEM
+                if key_kty == 'EC' and key.get('crv') == 'P-256':
+                    # ES256 key - Supabase uses this format
+                    return _convert_ec_jwk_to_pem(key)
+                    
+                elif key_kty == 'RSA':
+                    # RSA key (for RS256)
+                    return _convert_rsa_jwk_to_pem(key)
+        
+        logger.warning(f"Key with kid '{kid}' not found in JWKS. Available kids: {[k.get('kid') for k in keys]}")
         return None
         
     except Exception as e:
-        logger.error(f"Error extracting public key from JWKS: {e}")
+        logger.error(f"Error extracting public key from JWKS: {e}", exc_info=True)
+        return None
+
+
+def _convert_ec_jwk_to_pem(key: Dict[str, Any]) -> Optional[str]:
+    """Convert EC JWK (P-256) to PEM format.
+    
+    Args:
+        key: JWK dictionary with x, y coordinates
+        
+    Returns:
+        str: PEM formatted public key
+    """
+    try:
+        from cryptography.hazmat.primitives.asymmetric import ec
+        
+        # Decode base64url encoded coordinates
+        x_b64 = key['x']
+        y_b64 = key['y']
+        
+        # Add padding if needed
+        x_padding = 4 - len(x_b64) % 4
+        if x_padding != 4:
+            x_b64 += '=' * x_padding
+        y_padding = 4 - len(y_b64) % 4
+        if y_padding != 4:
+            y_b64 += '=' * y_padding
+        
+        x = base64.urlsafe_b64decode(x_b64)
+        y = base64.urlsafe_b64decode(y_b64)
+        
+        logger.debug(f"EC key coordinates - x: {len(x)} bytes, y: {len(y)} bytes")
+        
+        # Build uncompressed point format (0x04 || x || y)
+        point = b'\x04' + x + y
+        
+        public_key = ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256R1(), point
+        )
+        
+        pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        
+        logger.debug("Successfully converted EC JWK to PEM")
+        return pem.decode('utf-8')
+        
+    except Exception as e:
+        logger.error(f"Error converting EC JWK to PEM: {e}", exc_info=True)
+        return None
+
+
+def _convert_rsa_jwk_to_pem(key: Dict[str, Any]) -> Optional[str]:
+    """Convert RSA JWK to PEM format.
+    
+    Args:
+        key: JWK dictionary with n, e values
+        
+    Returns:
+        str: PEM formatted public key
+    """
+    try:
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        
+        n_b64 = key['n']
+        e_b64 = key['e']
+        
+        # Add padding if needed
+        n_padding = 4 - len(n_b64) % 4
+        if n_padding != 4:
+            n_b64 += '=' * n_padding
+        e_padding = 4 - len(e_b64) % 4
+        if e_padding != 4:
+            e_b64 += '=' * e_padding
+        
+        n = int.from_bytes(base64.urlsafe_b64decode(n_b64), 'big')
+        e = int.from_bytes(base64.urlsafe_b64decode(e_b64), 'big')
+        
+        public_key = rsa.RSAPublicNumbers(e, n).public_key(default_backend())
+        pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        
+        logger.debug("Successfully converted RSA JWK to PEM")
+        return pem.decode('utf-8')
+        
+    except Exception as e:
+        logger.error(f"Error converting RSA JWK to PEM: {e}", exc_info=True)
         return None
 
 
@@ -218,8 +312,6 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
     Raises:
         TokenValidationError: If token is invalid or expired
     """
-    import time
-    
     logger.info(f"Validating token. JWT_SECRET configured: {bool(SUPABASE_JWT_SECRET)}, SUPABASE_URL configured: {bool(SUPABASE_URL)}")
     
     # Decode token header and payload without verification
@@ -236,43 +328,61 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
     if exp:
         now = time.time()
         if now > exp:
-            logger.warning(f"Token expired by {now - exp} seconds")
+            logger.warning(f"Token expired by {now - exp} seconds (exp={exp}, now={now})")
             raise TokenValidationError("Token has expired")
         else:
-            logger.info(f"Token valid for {exp - now} more seconds")
+            logger.info(f"Token valid for {exp - now:.0f} more seconds")
     
     # Try local validation first (faster than API call)
     
     # For asymmetric algorithms (ES256, RS256), fetch public key from JWKS
     if token_alg in ['ES256', 'RS256']:
+        logger.info(f"Token uses {token_alg} - attempting JWKS validation")
         try:
             jwks = await _fetch_jwks()
-            if jwks and token_kid:
-                public_key_pem = _get_public_key_from_jwks(jwks, token_kid)
-                if public_key_pem:
-                    payload = jwt.decode(
-                        token,
-                        public_key_pem,
-                        algorithms=[token_alg],
-                        audience="authenticated",
-                    )
-                    logger.info(f"Token validated locally using JWKS public key ({token_alg})")
-                    return {
-                        "id": payload.get("sub"),
-                        "email": payload.get("email"),
-                        "role": payload.get("role", "authenticated"),
-                        "app_metadata": payload.get("app_metadata", {}),
-                        "user_metadata": payload.get("user_metadata", {}),
-                    }
-        except jwt.ExpiredSignatureError:
-            logger.warning("Token has expired (JWKS validation)")
-            raise TokenValidationError("Token has expired")
+            if jwks:
+                logger.info(f"JWKS fetched successfully with {len(jwks.get('keys', []))} keys")
+                if token_kid:
+                    public_key_pem = _get_public_key_from_jwks(jwks, token_kid)
+                    if public_key_pem:
+                        logger.debug(f"Public key PEM (first 100 chars): {public_key_pem[:100]}...")
+                        try:
+                            payload = jwt.decode(
+                                token,
+                                public_key_pem,
+                                algorithms=[token_alg],
+                                audience="authenticated",
+                            )
+                            logger.info(f"✅ Token validated locally using JWKS public key ({token_alg})")
+                            return {
+                                "id": payload.get("sub"),
+                                "email": payload.get("email"),
+                                "role": payload.get("role", "authenticated"),
+                                "app_metadata": payload.get("app_metadata", {}),
+                                "user_metadata": payload.get("user_metadata", {}),
+                            }
+                        except jwt.ExpiredSignatureError:
+                            logger.warning("Token has expired (JWKS validation)")
+                            raise TokenValidationError("Token has expired")
+                        except jwt.InvalidSignatureError as e:
+                            logger.error(f"Invalid signature during JWKS validation: {e}")
+                            # Continue to fallback
+                        except Exception as e:
+                            logger.error(f"JWT decode error with JWKS key: {e}")
+                            # Continue to fallback
+                    else:
+                        logger.warning(f"Could not extract public key for kid '{token_kid}' from JWKS")
+                else:
+                    logger.warning("Token has no 'kid' header - cannot use JWKS validation")
+            else:
+                logger.warning("Could not fetch JWKS - will try fallback methods")
         except Exception as e:
-            logger.debug(f"JWKS local validation failed: {e}")
+            logger.error(f"JWKS validation error: {e}", exc_info=True)
             # Fall through to API validation
     
     # For symmetric algorithm (HS256), try JWT secret
     elif token_alg == 'HS256' and SUPABASE_JWT_SECRET:
+        logger.info("Token uses HS256 - attempting JWT secret validation")
         try:
             payload = jwt.decode(
                 token,
@@ -280,7 +390,7 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
                 algorithms=["HS256"],
                 audience="authenticated",
             )
-            logger.info("Token validated locally using JWT secret (HS256)")
+            logger.info("✅ Token validated locally using JWT secret (HS256)")
             return {
                 "id": payload.get("sub"),
                 "email": payload.get("email"),
@@ -308,7 +418,8 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
         clean_url = SUPABASE_URL.rstrip('/')
         api_endpoint = f"{clean_url}/auth/v1/user"
         
-        logger.info(f"Calling Supabase Auth API: {clean_url[:30]}.../auth/v1/user")
+        logger.info(f"Calling Supabase Auth API: {api_endpoint}")
+        logger.debug(f"Anon key length: {len(SUPABASE_ANON_KEY)} chars")
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -324,15 +435,17 @@ async def _validate_token_with_supabase(token: str) -> Dict[str, Any]:
             
             if response.status_code == 401:
                 logger.warning(f"Supabase API returned 401 - token is invalid or expired")
+                logger.debug(f"Response body: {response.text[:200]}")
                 raise TokenValidationError("Invalid or expired token")
             elif response.status_code == 404:
                 logger.error(f"Supabase API endpoint not found: {api_endpoint}")
                 raise TokenValidationError("Auth endpoint not found - check SUPABASE_URL")
             elif response.status_code != 200:
-                logger.error(f"Supabase auth error: {response.status_code} - {response.text}")
+                logger.error(f"Supabase auth error: {response.status_code} - {response.text[:200]}")
                 raise TokenValidationError("Authentication service error")
             
             user_data = response.json()
+            logger.info(f"✅ Token validated via Supabase Auth API for user: {user_data.get('email')}")
             return {
                 "id": user_data.get("id"),
                 "email": user_data.get("email"),
