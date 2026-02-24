@@ -6,13 +6,14 @@ import { cn } from "@/lib/utils";
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  labelClassName?: string;
 }
 
-export function Input({ label, error, className, ...props }: InputProps) {
+export function Input({ label, error, className, labelClassName, ...props }: InputProps) {
   return (
     <div className="w-full">
       {label && (
-        <label className="block label mb-2 text-neutral-600">
+        <label className={cn("block label mb-2 text-neutral-600", labelClassName)}>
           {label}
         </label>
       )}

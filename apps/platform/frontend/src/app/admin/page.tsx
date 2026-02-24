@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
                     <AlertCircle size={20} />
                     <span>{error}</span>
-                    <button 
+                    <button
                         onClick={() => setError(null)}
                         className="ml-auto text-sm font-medium hover:underline"
                     >
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
                 </div>
             )}
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-            
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
@@ -120,20 +120,24 @@ export default function AdminDashboard() {
                     </h2>
                 </div>
                 <div className="divide-y divide-gray-100">
-                    {stats?.recent_jobs?.map((job) => (
-                        <div key={job.id} className="p-4 hover:bg-gray-50 transition">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-medium text-gray-900">{job.client_name}</p>
-                                    <p className="text-sm text-gray-500">
-                                        Job #{job.id} • {job.last_run ? new Date(job.last_run).toLocaleString() : 'Pending'}
-                                    </p>
+                    {stats?.recent_jobs && stats.recent_jobs.length > 0 ? (
+                        stats.recent_jobs.map((job) => (
+                            <div key={job.id} className="p-4 hover:bg-gray-50 transition">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="font-medium text-gray-900">{job.client_name}</p>
+                                        <p className="text-sm text-gray-500">
+                                            Job #{job.id} • {job.last_run ? new Date(job.last_run).toLocaleString() : 'Pending'}
+                                        </p>
+                                    </div>
+                                    <StatusBadge status={job.status} size="md" />
                                 </div>
-                                <StatusBadge status={job.status} size="md" />
                             </div>
+                        ))
+                    ) : (
+                        <div className="p-8 text-center text-gray-500">
+                            No recent activity — run your first reconciliation job to see results here.
                         </div>
-                    )) || (
-                        <div className="p-8 text-center text-gray-500">No recent activity</div>
                     )}
                 </div>
             </div>
@@ -148,7 +152,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: n
         purple: 'bg-purple-50 text-purple-600',
         orange: 'bg-orange-50 text-orange-600',
     }
-    
+
     return (
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between">

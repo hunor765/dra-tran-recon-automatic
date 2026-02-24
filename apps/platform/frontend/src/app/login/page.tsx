@@ -3,42 +3,20 @@
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/red-kit/Button";
 import { Input } from "@/components/red-kit/Input";
 import { Card } from "@/components/red-kit/Card";
+import Link from "next/link";
 
-export default function LoginPage() {
-  const [mode, setMode] = useState<"client" | "admin">("client");
+export default function ClientLoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const supabase = createClient();
-
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      router.push("/admin");
-      router.refresh();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleClientLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,34 +49,10 @@ export default function LoginPage() {
             <Lock size={28} strokeWidth={2.5} />
           </div>
           <h1 className="heading-lg text-neutral-900 mb-2">DRA PLATFORM</h1>
-          <p className="body text-neutral-500">Secure Access Portal</p>
+          <p className="body text-neutral-500">Client Portal Access</p>
         </div>
 
         <Card variant="outlined" className="p-8">
-          {/* Toggle */}
-          <div className="flex border border-neutral-200 mb-8 sharp">
-            <button
-              onClick={() => setMode("client")}
-              className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors duration-150 ${
-                mode === "client"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-white text-neutral-500 hover:text-neutral-900"
-              }`}
-            >
-              Client Login
-            </button>
-            <button
-              onClick={() => setMode("admin")}
-              className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors duration-150 ${
-                mode === "admin"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-white text-neutral-500 hover:text-neutral-900"
-              }`}
-            >
-              Admin Login
-            </button>
-          </div>
-
           {/* Feedback */}
           {error && (
             <div className="mb-6 p-4 border-l-2 border-revolt-red bg-red-50">
@@ -115,7 +69,7 @@ export default function LoginPage() {
           )}
 
           {/* Client Form */}
-          {mode === "client" && !message && (
+          {!message && (
             <form onSubmit={handleClientLogin} className="space-y-6">
               <Input
                 label="Email Address"
@@ -140,36 +94,18 @@ export default function LoginPage() {
               </p>
             </form>
           )}
-
-          {/* Admin Form */}
-          {mode === "admin" && (
-            <form onSubmit={handleAdminLogin} className="space-y-6">
-              <Input
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-          )}
         </Card>
+
+        {/* Admin Link */}
+        <div className="mt-6 text-center">
+          <Link
+            href="/admin/login"
+            className="inline-flex items-center gap-2 text-xs text-neutral-400 hover:text-neutral-600 uppercase tracking-wide transition-colors"
+          >
+            <Shield size={14} />
+            Administrator Access
+          </Link>
+        </div>
 
         {/* Footer */}
         <p className="text-center mt-8 text-xs text-neutral-400 uppercase tracking-wide">

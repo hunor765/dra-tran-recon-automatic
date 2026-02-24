@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Clock, Filter, RefreshCw, Play, AlertCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { api } from '@/lib/api/client'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -30,14 +31,23 @@ interface Job {
 const ITEMS_PER_PAGE = 10
 
 export default function JobsPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading...</div>}>
+            <JobsPageContent />
+        </Suspense>
+    )
+}
+
+function JobsPageContent() {
     const [jobs, setJobs] = useState<Job[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState({ status: '', client_id: '' })
     const [error, setError] = useState<string | null>(null)
-    const [clients, setClients] = useState<{id: number, name: string}[]>([])
+    const [clients, setClients] = useState<{ id: number, name: string }[]>([])
     const [runningForClient, setRunningForClient] = useState<number | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
     const { toasts, dismiss, success, error: showError } = useToast()
+    const searchParams = useSearchParams()
 
     useEffect(() => {
         fetchJobs()
@@ -57,9 +67,9 @@ export default function JobsPage() {
         setLoading(true)
         setError(null)
         try {
-            const data = await api.getAdminJobs({ 
-                status: filter.status || undefined, 
-                client_id: filter.client_id ? parseInt(filter.client_id) : undefined 
+            const data = await api.getAdminJobs({
+                status: filter.status || undefined,
+                client_id: filter.client_id ? parseInt(filter.client_id) : undefined
             })
             setJobs(data)
         } catch (err: any) {
@@ -100,7 +110,7 @@ export default function JobsPage() {
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
                     <AlertCircle size={20} />
                     <span>{error}</span>
-                    <button 
+                    <button
                         onClick={() => setError(null)}
                         className="ml-auto text-sm font-medium hover:underline"
                     >
@@ -125,7 +135,7 @@ export default function JobsPage() {
                 <select
                     value={filter.status}
                     onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                 >
                     <option value="">All Statuses</option>
                     <option value="completed">Completed</option>
@@ -144,7 +154,7 @@ export default function JobsPage() {
                         if (clientId) handleRunJob(clientId)
                     }}
                     disabled={runningForClient !== null}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                    className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                 >
                     <option value="">Select client...</option>
                     {clients.map(client => (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Users, Mail, Shield, UserCheck, AlertCircle, Plus, Trash2, Search, RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api/client'
@@ -61,7 +61,7 @@ export default function AdminUsersPage() {
             // Fetch clients
             const clientsData = await api.getClients()
             setClients(clientsData)
-            
+
             // Fetch user-client links from all clients
             const links: UserClientLink[] = []
             for (const client of clientsData) {
@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
 
     const removeUser = async (userId: number) => {
         if (!confirm('Are you sure you want to remove this user?')) return
-        
+
         try {
             await api.removeUser(userId)
             await fetchData()
@@ -94,7 +94,7 @@ export default function AdminUsersPage() {
         }
     }
 
-    const filteredLinks = userClientLinks.filter(link => 
+    const filteredLinks = userClientLinks.filter(link =>
         link.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         link.client_name?.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
                         placeholder="Search users or clients..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                     />
                 </div>
             </div>
@@ -191,11 +191,10 @@ export default function AdminUsersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                                                    link.role === 'admin' 
-                                                        ? 'bg-purple-50 text-purple-700' 
-                                                        : 'bg-blue-50 text-blue-700'
-                                                }`}>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${link.role === 'admin'
+                                                    ? 'bg-purple-50 text-purple-700'
+                                                    : 'bg-blue-50 text-blue-700'
+                                                    }`}>
                                                     {link.role}
                                                 </span>
                                             </td>
@@ -225,7 +224,7 @@ export default function AdminUsersPage() {
                             )}
                         </div>
                     ))}
-                    
+
                     {Object.keys(linksByClient).length === 0 && (
                         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                             <Users size={48} className="mx-auto text-gray-300 mb-4" />
@@ -261,16 +260,16 @@ export default function AdminUsersPage() {
     )
 }
 
-function GlobalInviteModal({ 
-    clients, 
-    onClose, 
-    onInvited, 
-    onSuccess 
-}: { 
+function GlobalInviteModal({
+    clients,
+    onClose,
+    onInvited,
+    onSuccess
+}: {
     clients: Client[]
     onClose: () => void
     onInvited: () => void
-    onSuccess: () => void 
+    onSuccess: () => void
 }) {
     const [email, setEmail] = useState('')
     const [role, setRole] = useState('viewer')
@@ -278,16 +277,25 @@ function GlobalInviteModal({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    // Escape key handler
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose()
+        }
+        document.addEventListener('keydown', handleKeyDown)
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [onClose])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!selectedClient) {
             setError('Please select a client')
             return
         }
-        
+
         setLoading(true)
         setError(null)
-        
+
         try {
             await api.inviteUser(parseInt(selectedClient), { email, role })
             onInvited()
@@ -302,20 +310,20 @@ function GlobalInviteModal({
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
             <div className="bg-white rounded-xl p-6 w-full max-w-md">
                 <h2 className="text-xl font-bold text-gray-900 mb-1">Invite User</h2>
                 <p className="text-gray-500 text-sm mb-4">
                     Send an invitation to access a client account
                 </p>
-                
+
                 {error && (
                     <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2">
                         <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                         {error}
                     </div>
                 )}
-                
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -324,7 +332,7 @@ function GlobalInviteModal({
                         <select
                             value={selectedClient}
                             onChange={(e) => setSelectedClient(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                             required
                         >
                             <option value="">Select a client...</option>
@@ -335,7 +343,7 @@ function GlobalInviteModal({
                             ))}
                         </select>
                     </div>
-                    
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Email Address <span className="text-red-500">*</span>
@@ -344,41 +352,41 @@ function GlobalInviteModal({
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                             placeholder="user@company.com"
                             required
                         />
                     </div>
-                    
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                         >
                             <option value="viewer">Viewer (Read-only access)</option>
                             <option value="admin">Admin (Full access)</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-1">
-                            {role === 'viewer' 
-                                ? 'Can view dashboards and reports only' 
+                            {role === 'viewer'
+                                ? 'Can view dashboards and reports only'
                                 : 'Can manage connectors, run jobs, and view all data'}
                         </p>
                     </div>
-                    
+
                     <div className="flex gap-3 pt-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition"
+                            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-revolt-red text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50"
+                            className="flex-1 px-4 py-2.5 bg-revolt-red text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50"
                         >
                             {loading ? 'Sending...' : 'Send Invite'}
                         </button>

@@ -48,14 +48,35 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     // Public routes that don't require auth
-    const publicRoutes = ['/', '/login']
+    const publicRoutes = ['/', '/login', '/admin/login']
     if (publicRoutes.includes(pathname)) {
+        // If user is already logged in, redirect to appropriate dashboard
+        if (user) {
+            const isAdmin = isAdminEmail(user.email) || user.app_metadata?.role === 'admin' || user.user_metadata?.role === 'admin'
+            
+            // If admin hits /login, redirect to /admin
+            if (isAdmin && pathname === '/login') {
+                return NextResponse.redirect(new URL('/admin', request.url))
+            }
+            
+            // If client hits /admin/login, redirect to /dashboard
+            if (!isAdmin && pathname === '/admin/login') {
+                return NextResponse.redirect(new URL('/dashboard', request.url))
+            }
+            
+            // If already logged in and hits their respective login page, go to dashboard
+            if ((isAdmin && pathname === '/admin/login') || (!isAdmin && pathname === '/login')) {
+                return NextResponse.redirect(new URL(isAdmin ? '/admin' : '/dashboard', request.url))
+            }
+        }
         return response
     }
 
     // Check if user is authenticated
     if (!user) {
-        const loginUrl = new URL('/login', request.url)
+        // Determine which login page to redirect to based on the path they're trying to access
+        const isAdminPath = pathname.startsWith('/admin')
+        const loginUrl = new URL(isAdminPath ? '/admin/login' : '/login', request.url)
         loginUrl.searchParams.set('redirect', pathname)
         return NextResponse.redirect(loginUrl)
     }
@@ -64,7 +85,7 @@ export async function middleware(request: NextRequest) {
     const isAdmin = isAdminEmail(user.email) || user.app_metadata?.role === 'admin' || user.user_metadata?.role === 'admin'
     
     // Admin routes require admin role
-    if (pathname.startsWith('/admin') && !isAdmin) {
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !isAdmin) {
         console.warn(`Non-admin user ${user.email} attempted to access ${pathname}`)
         return NextResponse.redirect(new URL('/dashboard', request.url))
     }
@@ -80,6 +101,8 @@ export const config = {
     matcher: [
         '/admin/:path*',
         '/dashboard/:path*',
+        '/login',
+        '/',
         '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }

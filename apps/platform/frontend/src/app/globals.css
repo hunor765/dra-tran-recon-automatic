@@ -37,18 +37,7 @@
   --radius-none: 0px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    /* Rich Black */
-    --foreground: #ffffff;
-
-    --surface-subtle: #171717;
-    /* Neutral-900 */
-    --surface-border: #262626;
-    /* Neutral-800 */
-  }
-}
+/* Dark mode disabled — app controls theme explicitly via Tailwind classes */
 
 body {
   background: var(--background);

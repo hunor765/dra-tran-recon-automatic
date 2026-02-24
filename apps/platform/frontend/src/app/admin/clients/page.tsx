@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Plus, Search, MoreVertical, Edit, Trash2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { api } from '@/lib/api/client'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -20,6 +21,14 @@ interface Client {
 const ITEMS_PER_PAGE = 10
 
 export default function ClientsPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading...</div>}>
+            <ClientsPageContent />
+        </Suspense>
+    )
+}
+
+function ClientsPageContent() {
     const [clients, setClients] = useState<Client[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
@@ -27,6 +36,7 @@ export default function ClientsPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const { toasts, dismiss, success, error: showError } = useToast()
     const [fetchError, setFetchError] = useState<string | null>(null)
+    const searchParams = useSearchParams()
 
     const fetchClients = async () => {
         setFetchError(null)
@@ -41,9 +51,20 @@ export default function ClientsPage() {
         }
     }
 
+    useEffect(() => {
+        fetchClients()
+    }, [])
+
+    // Auto-open create modal if ?create=true is in URL
+    useEffect(() => {
+        if (searchParams.get('create') === 'true') {
+            setShowCreateModal(true)
+        }
+    }, [searchParams])
+
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) return
-        
+
         try {
             await api.deleteClient(id)
             setClients(prev => prev.filter(c => c.id !== id))
@@ -54,7 +75,7 @@ export default function ClientsPage() {
         }
     }
 
-    const filteredClients = clients.filter(c => 
+    const filteredClients = clients.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.slug.toLowerCase().includes(search.toLowerCase())
     )
@@ -68,6 +89,20 @@ export default function ClientsPage() {
 
     return (
         <div>
+            {/* Error Display */}
+            {fetchError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
+                    <AlertCircle size={20} />
+                    <span>{fetchError}</span>
+                    <button
+                        onClick={() => setFetchError(null)}
+                        className="ml-auto text-sm font-medium hover:underline"
+                    >
+                        Dismiss
+                    </button>
+                </div>
+            )}
+
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
                 <button
@@ -88,116 +123,108 @@ export default function ClientsPage() {
                         placeholder="Search clients..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
                     />
                 </div>
             </div>
 
             {/* Clients Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Client</th>
-                            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Slug</th>
-                            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                            <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Created</th>
-                            <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {paginatedClients.map((client) => (
-                            <tr key={client.id} className="hover:bg-gray-50 transition">
-                                <td className="px-6 py-4">
-                                    <Link href={`/admin/clients/${client.id}`} className="font-medium text-gray-900 hover:text-revolt-red transition">
-                                        {client.name}
-                                    </Link>
-                                </td>
-                                <td className="px-6 py-4 text-gray-500">{client.slug}</td>
-                                <td className="px-6 py-4">
-                                    <StatusBadge status={client.is_active ? 'active' : 'inactive'} />
-                                </td>
-                                <td className="px-6 py-4 text-gray-500">
-                                    {new Date(client.created_at).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <Link
-                                            href={`/admin/clients/${client.id}`}
-                                            className="p-2 text-gray-400 hover:text-blue-600 transition"
-                                        >
-                                            <Edit size={16} />
-                                        </Link>
-                                        <button 
-                                            onClick={() => handleDelete(client.id)}
-                                            className="p-2 text-gray-400 hover:text-red-600 transition"
-                                            title="Delete client"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {paginatedClients.length === 0 && (
-                    <div className="p-8 text-center text-gray-500">
-                        {search ? 'No clients match your search' : 'No clients yet. Create your first client!'}
-                    </div>
-                )}
+                {loading ? (
+                    <TableSkeleton rows={5} columns={5} />
+                ) : (
+                    <>
+                        <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Client</th>
+                                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Slug</th>
+                                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
+                                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Created</th>
+                                    <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {paginatedClients.map((client) => (
+                                    <tr key={client.id} className="hover:bg-gray-50 transition">
+                                        <td className="px-6 py-4">
+                                            <Link href={`/admin/clients/${client.id}`} className="font-medium text-gray-900 hover:text-revolt-red transition">
+                                                {client.name}
+                                            </Link>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-500">{client.slug}</td>
+                                        <td className="px-6 py-4">
+                                            <StatusBadge status={client.is_active ? 'active' : 'inactive'} />
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-500">
+                                            {new Date(client.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link
+                                                    href={`/admin/clients/${client.id}`}
+                                                    className="p-2 text-gray-400 hover:text-blue-600 transition"
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDelete(client.id)}
+                                                    className="p-2 text-gray-400 hover:text-red-600 transition"
+                                                    title="Delete client"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {paginatedClients.length === 0 && (
+                            <div className="p-8 text-center text-gray-500">
+                                {search ? 'No clients match your search' : 'No clients yet. Create your first client!'}
+                            </div>
+                        )}
 
-                {/* Pagination */}
-                {!loading && filteredClients.length > ITEMS_PER_PAGE && (
-                    <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-                        <span className="text-sm text-gray-500">
-                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredClients.length)} of {filteredClients.length}
-                        </span>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="px-3 py-1 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <span className="px-3 py-1 text-sm text-gray-600">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className="px-3 py-1 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
-                    </div>
+                        {/* Pagination */}
+                        {filteredClients.length > ITEMS_PER_PAGE && (
+                            <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+                                <span className="text-sm text-gray-500">
+                                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredClients.length)} of {filteredClients.length}
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <span className="px-3 py-1 text-sm text-gray-600">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
-
-            {/* Error Display */}
-            {fetchError && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
-                    <AlertCircle size={20} />
-                    <span>{fetchError}</span>
-                    <button 
-                        onClick={() => setFetchError(null)}
-                        className="ml-auto text-sm font-medium hover:underline"
-                    >
-                        Dismiss
-                    </button>
-                </div>
-            )}
 
             {toasts.map(t => (
                 <Toast key={t.id} message={t.message} type={t.type} onDismiss={() => dismiss(t.id)} />
             ))}
 
-            {/* Create Modal - simplified, expand later */}
+            {/* Create Modal */}
             {showCreateModal && (
-                <CreateClientModal 
-                    onClose={() => setShowCreateModal(false)} 
+                <CreateClientModal
+                    onClose={() => setShowCreateModal(false)}
                     onCreated={fetchClients}
                     onSuccess={() => success('Client created successfully')}
                 />
@@ -220,11 +247,20 @@ function CreateClientModal({ onClose, onCreated, onSuccess }: { onClose: () => v
         }
     }
 
+    // Escape key handler
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose()
+        }
+        document.addEventListener('keydown', handleKeyDown)
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [onClose])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError(null)
-        
+
         try {
             await api.createClient({ name, slug })
             onCreated()
@@ -239,11 +275,12 @@ function CreateClientModal({ onClose, onCreated, onSuccess }: { onClose: () => v
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
             <div className="bg-white rounded-xl p-6 w-full max-w-md">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Create New Client</h2>
                 {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2">
+                        <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                         {error}
                     </div>
                 )}
@@ -254,7 +291,8 @@ function CreateClientModal({ onClose, onCreated, onSuccess }: { onClose: () => v
                             type="text"
                             value={name}
                             onChange={(e) => handleNameChange(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
+                            placeholder="e.g. Acme Corp"
                             required
                         />
                     </div>
@@ -264,7 +302,8 @@ function CreateClientModal({ onClose, onCreated, onSuccess }: { onClose: () => v
                             type="text"
                             value={slug}
                             onChange={(e) => setSlug(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-revolt-red focus:border-revolt-red outline-none text-gray-900 bg-white"
+                            placeholder="e.g. acme-corp"
                             required
                         />
                     </div>
@@ -272,14 +311,14 @@ function CreateClientModal({ onClose, onCreated, onSuccess }: { onClose: () => v
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition"
+                            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-revolt-red text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50"
+                            className="flex-1 px-4 py-2.5 bg-revolt-red text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50"
                         >
                             {loading ? 'Creating...' : 'Create Client'}
                         </button>
