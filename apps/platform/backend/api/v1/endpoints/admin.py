@@ -92,7 +92,7 @@ async def get_all_jobs(
     if status:
         query = query.where(Job.status == status)
     
-    query = query.order_by(Job.started_at.desc()).offset(skip).limit(limit)
+    query = query.order_by(Job.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
     
     jobs = []
@@ -102,8 +102,18 @@ async def get_all_jobs(
             "client_id": job.client_id,
             "client_name": client_name,
             "status": job.status,
+            "started_at": job.started_at,
             "last_run": job.last_run,
-            "result_summary": job.result_summary
+            "created_at": job.created_at,
+            "completed_at": job.completed_at,
+            "result_summary": job.result_summary,
+            "days": job.days,
+            "start_date": job.start_date,
+            "end_date": job.end_date,
+            "config": job.config,
+            "logs": job.logs,
+            "retry_count": job.retry_count,
+            "max_retries": job.max_retries
         }
         jobs.append(job_dict)
     

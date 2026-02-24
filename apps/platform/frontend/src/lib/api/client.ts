@@ -41,6 +41,9 @@ interface Job {
     client_id: number
     client_name?: string | null
     status: 'pending' | 'running' | 'completed' | 'failed' | 'retrying'
+    started_at: string | null
+    completed_at: string | null
+    created_at?: string
     last_run: string | null
     result_summary: JobResult | null
     logs: string | null

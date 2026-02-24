@@ -62,6 +62,7 @@ async def list_jobs(
             "client_id": job.client_id,
             "client_name": client_name,
             "status": job.status,
+            "started_at": job.started_at,
             "last_run": job.last_run,
             "created_at": job.created_at,
             "result_summary": job.result_summary,

@@ -1,0 +1,80 @@
+[250] Found matching key with kid '26bd5c72-1304-4d3b-afb0-15dad4da7f6a', type 'EC'
+[251] ✅ Token validated locally using JWKS public key (ES256)
+[252] Token validated successfully for user: hunor.lazar@datarevolt.agency
+[253] INFO:     100.64.0.2:26746 - "GET /api/v1/admin/stats HTTP/1.1" 500 Internal Server Error
+[254] ERROR:    Exception in ASGI application
+[255]   + Exception Group Traceback (most recent call last):
+[256]   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+[257]   |     yield
+[258]   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 190, in __call__
+[259]   |     async with anyio.create_task_group() as task_group:
+[260]   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+[261]   |     raise BaseExceptionGroup(
+[262]   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+[263]   +-+---------------- 1 ----------------
+[264]     | Traceback (most recent call last):
+[265]     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+[266]     |     result = await app(  # type: ignore[func-returns-value]
+[267]     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[268]     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+[269]     |     return await self.app(scope, receive, send)
+[270]     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[271]     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+[272]     |     await super().__call__(scope, receive, send)
+[273]     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+[274]     |     await self.middleware_stack(scope, receive, send)
+[275]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+[276]     |     raise exc
+[277]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+[278]     |     await self.app(scope, receive, _send)
+[279]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 189, in __call__
+[280]     |     with collapse_excgroups():
+[281]     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+[282]     |     self.gen.throw(typ, value, traceback)
+[283]     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 91, in collapse_excgroups
+[284]     |     raise exc
+[285]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 191, in __call__
+[286]     |     response = await self.dispatch_func(request, call_next)
+[287]     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[288]     |   File "/app/main.py", line 113, in handle_forwarded_proto
+[289]     |     response = await call_next(request)
+[290]     |                ^^^^^^^^^^^^^^^^^^^^^^^^
+[291]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 165, in call_next
+[292]     |     raise app_exc
+[293]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 151, in coro
+[294]     |     await self.app(scope, receive_or_disconnect, send_no_error)
+[295]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 91, in __call__
+[296]     |     await self.simple_response(scope, receive, send, request_headers=headers)
+[297]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 146, in simple_response
+[298]     |     await self.app(scope, receive, send)
+[299]     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+[300]     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+[301]     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+[302]     |     raise exc
+[303]     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+[304]     |     await app(scope, receive, sender)
+[305]     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 762, in __call__
+[306]     |     await self.middleware_stack(scope, receive, send)
+[307]     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 782, in app
+[308]     |     await route.handle(scope, receive, send)
+[309]     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+[310]     |     response = await func(request)
+[311]     |     await self.app(scope, receive, send)
+[312]     |                ^^^^^^^^^^^^^^^^^^^
+[313]     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+[314]     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+[315]     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 299, in app
+[316]     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+[317]     |     raise e
+[318]     |     raise exc
+[319]     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 294, in app
+[320]     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+[321]     |     await app(scope, receive, sender)
+[322]     |     raw_response = await run_endpoint_function(
+[323]     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+[324]     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[325]     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+[326]     |     return await dependant.call(**values)
+[327]     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[328]     |   File "/app/api/v1/endpoints/admin.py", line 32, in get_admin_stats
+[329]     |     result = await db.execute(select(func.count(Client.id)))

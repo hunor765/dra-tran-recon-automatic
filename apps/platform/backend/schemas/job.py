@@ -98,7 +98,7 @@ class Job(BaseModel):
     client_id: int
     client_name: Optional[str] = None
     status: str
-    started_at: datetime
+    started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     last_run: Optional[datetime] = None  # Alias for started_at to match frontend expectations
     result_summary: Optional[dict] = None
@@ -109,6 +109,7 @@ class Job(BaseModel):
     config: Optional[dict] = None
     retry_count: int = 0  # Number of retry attempts
     max_retries: int = 3  # Maximum retry attempts
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
