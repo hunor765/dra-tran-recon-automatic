@@ -71,24 +71,24 @@ class RateLimits:
     """Predefined rate limits for different endpoint categories."""
     
     # Public/health endpoints - generous limits
-    HEALTH = ["60/minute"]
+    HEALTH = "60/minute"
     
     # Read operations - standard limits
-    LIST = ["100/minute"]
-    GET = ["100/minute"]
+    LIST = "100/minute"
+    GET = "100/minute"
     
     # Write operations - stricter limits
-    CREATE = ["30/minute"]
-    UPDATE = ["30/minute"]
-    DELETE = ["10/minute"]
+    CREATE = "30/minute"
+    UPDATE = "30/minute"
+    DELETE = "10/minute"
     
     # Expensive operations - very strict limits
-    JOB_RUN = ["10/minute"]  # Running reconciliation jobs
-    CONNECTOR_TEST = ["20/minute"]  # Testing connector configurations
+    JOB_RUN = "10/minute"  # Running reconciliation jobs
+    CONNECTOR_TEST = "20/minute"  # Testing connector configurations
     
     # Admin operations - moderate limits (admins should have higher limits in general)
-    ADMIN_READ = ["200/minute"]
-    ADMIN_WRITE = ["50/minute"]
+    ADMIN_READ = "200/minute"
+    ADMIN_WRITE = "50/minute"
 
 
 def get_user_tier_limits(
