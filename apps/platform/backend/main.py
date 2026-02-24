@@ -117,6 +117,21 @@ async def handle_forwarded_proto(request: Request, call_next):
 setup_rate_limiting(app)
 
 
+# Global exception handler — ensures 500 errors return JSON with CORS headers
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch unhandled exceptions and return proper JSON responses.
+    
+    This ensures error responses go through the CORS middleware,
+    preventing CORS errors on 500 responses.
+    """
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+
+
 @app.on_event("startup")
 async def startup_event():
     """Application startup handler."""

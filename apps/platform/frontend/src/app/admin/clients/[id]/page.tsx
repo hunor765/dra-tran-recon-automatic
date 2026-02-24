@@ -45,7 +45,7 @@ interface Job {
 export default function ClientDetailPage() {
     const params = useParams()
     const clientId = parseInt(params.id as string)
-    
+
     const [client, setClient] = useState<Client | null>(null)
     const [connectors, setConnectors] = useState<Connector[]>([])
     const [jobs, setJobs] = useState<Job[]>([])
@@ -63,15 +63,27 @@ export default function ClientDetailPage() {
     const fetchClientData = async () => {
         setError(null)
         try {
-            // Fetch all data in parallel
-            const [clientData, connectorsData, jobsData] = await Promise.all([
-                api.getClient(clientId),
+            // Fetch client data first — this is critical
+            const clientData = await api.getClient(clientId)
+            setClient(clientData)
+
+            // Fetch connectors and jobs independently — these can fail gracefully
+            const [connectorsResult, jobsResult] = await Promise.allSettled([
                 api.getConnectors(clientId),
                 api.getJobs({ client_id: clientId, limit: 5 })
             ])
-            setClient(clientData)
-            setConnectors(connectorsData)
-            setJobs(jobsData)
+
+            if (connectorsResult.status === 'fulfilled') {
+                setConnectors(connectorsResult.value)
+            } else {
+                console.warn('Failed to fetch connectors:', connectorsResult.reason)
+            }
+
+            if (jobsResult.status === 'fulfilled') {
+                setJobs(jobsResult.value)
+            } else {
+                console.warn('Failed to fetch jobs:', jobsResult.reason)
+            }
         } catch (err: any) {
             console.error('Failed to fetch client data:', err)
             setError(err.message || 'Failed to fetch client data')
@@ -125,7 +137,7 @@ export default function ClientDetailPage() {
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
                     <AlertCircle size={20} />
                     <span>{error}</span>
-                    <button 
+                    <button
                         onClick={() => setError(null)}
                         className="ml-auto text-sm font-medium hover:underline"
                     >
